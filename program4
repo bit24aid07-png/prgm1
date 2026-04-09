@@ -1,0 +1,83 @@
+# Graph with explicit node types
+graph = {
+    'A': {'type': 'OR', 'children': [('B',1), ('C',1)]},
+    'B': {'type': 'AND', 'children': [('D',1), ('E',1)]},
+    'C': {'type': 'OR', 'children': [('F',1), ('G',1)]}
+}
+# Heuristic values
+heuristic = {
+    'A': 6,
+    'B': 4,
+    'C': 3,
+    'D': 0,
+    'E': 0,
+    'F': 0,
+    'G': 0
+}
+'''
+graph = {
+    'A': {'type':'OR', 'children':[('B',1), ('C',1)]},
+    'B': {'type':'AND', 'children':[('D',2), ('E',2)]},
+    'C': {'type':'OR', 'children':[('F',2), ('G',3)]},
+    'D': {'type':'OR', 'children':[('H',1), ('I',2)]},
+    'E': {'type':'AND', 'children':[('J',1), ('K',1)]},
+    'F': {'type':'OR', 'children':[('L',3)]}
+}
+heuristic = {
+    'A':10,
+    'B':8,
+    'C':6,
+    'D':4,
+    'E':5,
+    'F':4,
+    'G':0,
+    'H':0,
+    'I':0,
+    'J':0,
+    'K':0,
+    'L':0
+}
+'''
+solution = {}
+def ao_star(node):
+    if node not in graph:
+        return heuristic[node]
+    node_type = graph[node]['type']
+    children = graph[node]['children']
+    # OR NODE
+    if node_type == "OR":
+        min_cost = float('inf')
+        best_child = None
+        for child, cost in children:
+            total_cost = cost + ao_star(child)
+            if total_cost < min_cost:
+                min_cost = total_cost
+                best_child = child
+        heuristic[node] = min_cost
+        solution[node] = [best_child]
+        return min_cost
+    # AND NODE
+    if node_type == "AND":
+        total_cost = 0
+        best_children = []
+        for child, cost in children:
+            total_cost += cost + ao_star(child)
+            best_children.append(child)
+        heuristic[node] = total_cost
+        solution[node] = best_children
+        return total_cost
+
+# Function to print only optimal solution graph and the optimal cost
+def print_solution(node):
+    optimal_cost = 0
+    print(node)
+    if node in solution:
+        for child in solution[node]:
+            optimal_cost += heuristic[child]
+            print_solution(child)
+            
+# Run AO*
+total_cost = ao_star('A')
+print("Optimal Solution Graph:")
+print_solution('A')
+print("Optimal Cost:", total_cost)
